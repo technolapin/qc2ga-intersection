@@ -1,0 +1,94 @@
+* What is this and why is it
+
+This code is an implementation of a method for extracting points from an intersection object of QC2GA, an algebra used to manipulate conics.
+
+This has been presented in an academic paper.
+
+| authors    | Clément Chomicki, Stéphane Breuils, Venceslas Biri, Vincent Nozick. |
+| title      | Intersection of conic sections using geometric algebra.             |
+| conference | CGI ENGAGE 2023, Aug 2023, Shanghai, China. pp.175-187              |
+| DOI        | https://dx.doi.org/10.1007/978-3-031-50078-7_14                     |
+| HAL ID     | [[https://hal.science/hal-04210085][⟨hal-04210085⟩]]                |
+
+This paper has then be extended into a journal.
+
+| authors | Clément Chomicki, Stéphane Breuils, Venceslas Biri, Vincent Nozick. |
+| title   | Conics, Their Pencils and Intersections in Geometric Algebra        |
+| journal | Advances in Applied Clifford Algebras 35, 1 (2025)                  |
+| DOI     | https://doi.org/10.1007/s00006-024-01356-5                          |
+| HAL ID  | [[https://hal.science/hal-04774264v1][⟨hal-04774264⟩]]              |
+
+
+The intersection objects of QC2GA are what happens when you intersect two conics. As conics can have up to 4 intersection points, these object contains up to 4 points.
+The intersection objects of the algebra are however not simply a list of point, a bit more work is needed to find theses points. 
+Think of it as finding the roots of a polynomial. X^2 - 3x + 1 does contains two roots, but you need to do a bit of math to extract them.
+
+* Dependencies
+** QC2GA (Garamon)
+This code heavely relies on [[https://github.com/vincentnozick/garamon][Garamon]], a geometric algebra library generator.
+Please use Garamon to generate the library for the algebra qc2ga (the config file for this algebra is already in the conf/ folder of the repository of Garamon), and install this library in your system (or find another way to provide qc2ga to the project).
+
+#+begin_src bash
+git clone https://github.com/vincentnozick/garamon
+cd garamon
+mkdir build
+cd build
+cmake .. && cmake --build . -j 8
+./garamon_generator ../conf/qc2ga.conf
+cd output/garamon_qc2ga/
+mkdir build
+cd build
+cmake .. && cmake --build . -j 8
+sudo make install
+#+end_src
+
+** Eigen
+QC2GA requires Eigen3 to be used, therefore please install it somehow.
+
+* Building and running this repo
+
+After having installed all the dependencies
+Clone this repository and build it.
+#+begin_src bash
+git clone https://github.com/technolapin/qc2ga-intersection
+cd qc2ga-intersection
+mkdir build
+cd build
+cmake .. && cmake --build . -j 8
+#+end_src
+
+An executable will be generated, that requires a file containing the coordinates of some intersection objects onto which our algorithm will be tested.
+
+#+begin_src bash
+./solve_inter ../data/inters/4317732-100000-duals-0-inter.txt
+#+end_src
+
+The names of these data files indicates the number of intersection objects and the number of point contained in each intersection. 
+For instance, it is expected to find 3 points in an intersection object of the file ~*-duals-3-inter.txt~ .
+
+
+
+* Quick overview of the code
+
+| ~solve_conic_intersection.cpp~ | The main file in which the tests are implemented.|
+| ~conic.hpp~ | Provides a simple structure for representing conics section as a simple list of parameters of the implicit equation|
+| ~consts.hpp~ | Global constants and utilitary functions.|
+| ~intersections.hpp~ | Introduces the structure ~Algo~ which contains the implementation of all the relevants algorithm of our paper|
+| ~qc2gaTools.hpp~ | Utilitaries for building qc2ga objects (from Garamon)|
+| ~qcga_tools.hpp~ | Utilitaries for building qc2ga objects| 
+| ~random.hpp~ |Random Number Generator|
+| ~svg_export.hpp~ |Utilitaries to render figures in SVG (like the ones of the papers).|
+
+** The structure ~Algo~
+
+The structure ~Algo~ groups all the relevant algorithms implemented from the paper. 
+It is used this way in practice:
+#+begin_src c++
+const std::vector<std::array<S,2>> pts_from_lc = Algo(inter, gen).run().inter_pts;
+#+end_src
+Here ~inter~ is a multivector from QC2GA (expected to be a 6-vector as described by the paper) and ~gen~ is a random number generator.
+The various fields of Algo are used to store the several variables and objects needed for the extraction.
+
+For a more detailed explanation of the algorithms of this structure, please refer to the paper introducting the method and the comments of the code.
+
+
